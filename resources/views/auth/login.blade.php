@@ -11,13 +11,13 @@
   <div class="bg-sky-100 flex justify-center items-center h-screen">
     <!-- Left: Image -->
     <div class="w-1/2 h-screen hidden lg:block">
-      <img src="{{ asset('assets/AgendaPim.png') }}" alt="Login Image" class=" object-cover w-full h-full">
+      <img src="{{ asset('assets/SIMAPIM.png') }}" alt="Login Image" class=" object-cover w-full h-full">
     </div>
     <!-- Right: Login Form -->
     <div class="lg:p-36 md:p-52 sm:p-20 p-8 w-full lg:w-1/2">
       <div class="flex items-center space-x-2 mb-4">
         <img src="{{ asset('assets/Logo_Lampung.png') }}" class="w-8 h-8" alt="Logo Lampung" />
-        <h1 class="text-2xl font-semibold">AgendaPim</h1>
+        <h1 class="text-2xl font-semibold">SIMAPIM</h1>
     </div>
 
       

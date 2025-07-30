@@ -8,8 +8,8 @@
       <!-- Logo -->
       
       <a class="flex items-center gap-x-2 text-xl font-semibold text-gray-800 dark:text-white" href="#">
-        <img src="{{ asset('assets/Logo_Lampung.png') }}" class="w-6 h-6" alt="Logo Lampung">
-        <span class="font-bold tracking-wide">AgendaPim</span>
+        <img src="{{ asset('assets/SIMAPIMLOGO.png') }}" class="w-6 h-6" alt="Logo Lampung">
+        <span class="font-bold tracking-wide">SIMAPIM</span>
       </a>
       <!-- End Logo -->
     </div>
