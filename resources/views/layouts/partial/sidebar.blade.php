@@ -14,8 +14,8 @@
         <!-- Logo -->
         <a class="flex items-center gap-x-2 rounded-md text-xl font-semibold focus:outline-hidden focus:opacity-80 text-gray-800 dark:text-white" href="#" aria-label="AgendaPim">
           <!-- Logo SVG (atau bisa pakai <img src="logo.png" class="w-6 h-6" /> jika kamu punya file PNG/SVG sendiri) -->
-          <img src="{{ asset('assets/Logo_Lampung.png') }}" class="w-6 h-6" alt="Logo Lampung" />
-          <span class="text-lg font-bold tracking-wide">AgendaPim</span>
+          <img src="{{ asset('assets/SIMAPIMLOGO.png') }}" class="w-6 h-6" alt="Logo Lampung" />
+          <span class="text-lg font-bold tracking-wide">SIMAPIM</span>
         </a>
         <!-- End Logo -->
 
