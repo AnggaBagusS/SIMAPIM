@@ -1,0 +1,923 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "SIMAPIM API - Sistem Informasi Agenda Pimpinan",
+    "description": "Dokumentasi RESTful API untuk Sistem Informasi Agenda Pimpinan (SIMAPIM). Mendukung integrasi dengan aplikasi Mobile (Android/iOS), SPA Frontend, dan layanan eksternal.\n\n### Autentikasi\nSebagian besar endpoint memerlukan Bearer Token via header HTTP:\n`Authorization: Bearer <your_access_token>`",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Tim Pengembang SIMAPIM",
+      "email": "admin@simapim.lampungprov.go.id"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8000/api/v1",
+      "description": "Server Pengembangan Lokal (Artisan / Laragon)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Autentikasi & Profil",
+      "description": "Manajemen sesi autentikasi, token Sanctum, dan profil pengguna"
+    },
+    {
+      "name": "Dashboard",
+      "description": "Statistik dan metrik ringkasan agenda pimpinan"
+    },
+    {
+      "name": "Agenda Kegiatan",
+      "description": "Operasi CRUD jadwal kegiatan pimpinan, filter, dan penugasan petugas"
+    },
+    {
+      "name": "Direktori Petugas",
+      "description": "Data direktori staf protokol / petugas pendamping kegiatan"
+    }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": ["Autentikasi & Profil"],
+        "summary": "Login Pengguna",
+        "description": "Autentikasi pengguna menggunakan email dan kata sandi. Mengembalikan Bearer Token Laravel Sanctum.",
+        "operationId": "loginUser",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login berhasil, token dikembalikan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validasi gagal atau kredensial salah",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Autentikasi & Profil"],
+        "summary": "Profil Pengguna Aktif",
+        "description": "Mengambil data detail akun pengguna yang sedang login berdasarkan Bearer Token.",
+        "operationId": "getProfile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Data profil pengguna berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Data profil berhasil diambil." },
+                    "data": { "$ref": "#/components/schemas/User" }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token tidak valid atau tidak disertakan",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/UnauthenticatedResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/profile": {
+      "put": {
+        "tags": ["Autentikasi & Profil"],
+        "summary": "Perbarui Profil & Password",
+        "description": "Memperbarui nama, nomor telepon, dan opsional mengganti kata sandi pengguna.",
+        "operationId": "updateProfile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Profil berhasil diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Profil berhasil diperbarui." },
+                    "data": { "$ref": "#/components/schemas/User" }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Kesalahan validasi data",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": ["Autentikasi & Profil"],
+        "summary": "Logout Pengguna",
+        "description": "Mencabut dan menghapus token akses Sanctum yang sedang aktif.",
+        "operationId": "logoutUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Berhasil logout",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Logout berhasil. Token telah dicabut." }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Ringkasan Statistik Dashboard",
+        "description": "Mengambil metrik statistik agenda kegiatan pimpinan dan agenda terdekat.",
+        "operationId": "getDashboardMetrics",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Metrik dashboard berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agendas": {
+      "get": {
+        "tags": ["Agenda Kegiatan"],
+        "summary": "Daftar Seluruh Agenda",
+        "description": "Mengambil daftar agenda kegiatan pimpinan dengan pagination dan berbagai opsi filter.",
+        "operationId": "getAgendas",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Pencarian berdasarkan judul acara, lokasi, atau pejabat",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Filter status agenda",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["terjadwal", "berlangsung", "selesai", "batal"]
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "description": "Batas awal tanggal kegiatan (format: YYYY-MM-DD)",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "description": "Batas akhir tanggal kegiatan (format: YYYY-MM-DD)",
+            "required": false,
+            "schema": { "type": "string", "format": "date" }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "description": "Jumlah data per halaman (default: 10)",
+            "required": false,
+            "schema": { "type": "integer", "default": 10 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar agenda kegiatan berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Daftar agenda berhasil diambil." },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Agenda" }
+                    },
+                    "meta": { "$ref": "#/components/schemas/PaginationMeta" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Agenda Kegiatan"],
+        "summary": "Tambah Agenda Baru (Khusus Admin)",
+        "description": "Menambahkan jadwal agenda kegiatan baru ke dalam sistem beserta penugasan petugas pendamping dan berkas sambutan.",
+        "operationId": "createAgenda",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/StoreAgendaForm"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Agenda berhasil dibuat",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Agenda berhasil ditambahkan." },
+                    "data": { "$ref": "#/components/schemas/Agenda" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Akses ditolak (hanya akun admin)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validasi form gagal",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agendas/my": {
+      "get": {
+        "tags": ["Agenda Kegiatan"],
+        "summary": "Daftar Agenda Tugas Saya (Staff)",
+        "description": "Mengambil daftar agenda kegiatan di mana pengguna yang sedang login terdaftar sebagai petugas pendamping.",
+        "operationId": "getMyAgendas",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar tugas agenda berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Daftar agenda tugas Anda berhasil diambil." },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Agenda" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/agendas/{id}": {
+      "get": {
+        "tags": ["Agenda Kegiatan"],
+        "summary": "Detail Agenda",
+        "description": "Mengambil informasi detail satu agenda kegiatan beserta relasi petugas pendamping.",
+        "operationId": "getAgendaDetail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID Agenda kegiatan",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail agenda berhasil ditemukan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Data agenda berhasil diambil." },
+                    "data": { "$ref": "#/components/schemas/Agenda" }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Agenda tidak ditemukan",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["Agenda Kegiatan"],
+        "summary": "Perbarui Agenda (Khusus Admin)",
+        "description": "Memperbarui informasi agenda kegiatan yang sudah ada. Catatan: jika mengunggah file baru menggunakan form multipart, gunakan POST dengan parameter `_method=PUT`.",
+        "operationId": "updateAgenda",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID Agenda yang akan diperbarui",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAgendaJson"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Agenda berhasil diperbarui",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Agenda berhasil diperbarui." },
+                    "data": { "$ref": "#/components/schemas/Agenda" }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Akses ditolak (hanya akun admin)"
+          },
+          "404": {
+            "description": "Agenda tidak ditemukan"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Agenda Kegiatan"],
+        "summary": "Hapus Agenda (Khusus Admin)",
+        "description": "Menghapus agenda kegiatan beserta relasi pivot petugas dan berkas sambutan fisik.",
+        "operationId": "deleteAgenda",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID Agenda yang akan dihapus",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Agenda berhasil dihapus",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Agenda berhasil dihapus." }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Akses ditolak (hanya akun admin)"
+          },
+          "404": {
+            "description": "Agenda tidak ditemukan"
+          }
+        }
+      }
+    },
+    "/agendas/{id}/link-dokumentasi": {
+      "put": {
+        "tags": ["Agenda Kegiatan"],
+        "summary": "Simpan Link Dokumentasi Kegiatan",
+        "description": "Menyimpan atau memperbarui tautan Google Drive dokumentasi foto/kegiatan. Dapat dilakukan oleh Admin maupun Petugas yang bertugas.",
+        "operationId": "updateDocumentationLink",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID Agenda kegiatan",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["link"],
+                "properties": {
+                  "link": {
+                    "type": "string",
+                    "format": "uri",
+                    "example": "https://drive.google.com/drive/folders/1ABCxyz-sample-link"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Link dokumentasi berhasil disimpan",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Link Google Drive dokumentasi berhasil disimpan." },
+                    "data": { "$ref": "#/components/schemas/Agenda" }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Format link tidak valid (harus berupa URL valid)"
+          }
+        }
+      }
+    },
+    "/petugas": {
+      "get": {
+        "tags": ["Direktori Petugas"],
+        "summary": "Daftar Petugas / Staf Protokol",
+        "description": "Mengambil direktori seluruh staf atau petugas pendamping kegiatan.",
+        "operationId": "getPetugasList",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Cari berdasarkan nama, NIP, atau jabatan petugas",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daftar petugas berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Daftar petugas berhasil diambil." },
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/User" }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/petugas/{id}": {
+      "get": {
+        "tags": ["Direktori Petugas"],
+        "summary": "Detail Petugas & Riwayat Pendampingan",
+        "description": "Mengambil rincian profil petugas beserta daftar riwayat agenda kegiatan yang didampinginya.",
+        "operationId": "getPetugasDetail",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "description": "ID Petugas",
+            "schema": { "type": "integer" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detail petugas berhasil diambil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "message": { "type": "string", "example": "Data petugas berhasil diambil." },
+                    "data": {
+                      "allOf": [
+                        { "$ref": "#/components/schemas/User" },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "agendas": {
+                              "type": "array",
+                              "items": { "$ref": "#/components/schemas/Agenda" }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Petugas tidak ditemukan"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Sanctum Token",
+        "description": "Masukkan Personal Access Token Sanctum yang didapat setelah login via `/auth/login`."
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 2 },
+          "name": { "type": "string", "example": "Ahmad Fauzi, S.STP" },
+          "nip": { "type": "string", "example": "199201012015031002" },
+          "jabatan": { "type": "string", "example": "Protokol Pimpinan" },
+          "email": { "type": "string", "format": "email", "example": "fauzi@lampungprov.go.id" },
+          "telp": { "type": "string", "example": "081234567890" },
+          "role": { "type": "string", "example": "staff", "enum": ["admin", "staff"] },
+          "type": { "type": "integer", "example": 2, "description": "1 = Admin, 2 = Staff/Petugas" },
+          "avatar_url": {
+            "type": "string",
+            "format": "uri",
+            "example": "http://127.0.0.1:8000/storage/avatars/user.png"
+          }
+        }
+      },
+      "Agenda": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 10 },
+          "judul_acara": { "type": "string", "example": "Rapat Koordinasi Penanganan Inflasi Daerah" },
+          "tanggal": { "type": "string", "format": "date", "example": "2026-10-02" },
+          "hari": { "type": "string", "example": "Jumat" },
+          "jam_mulai": { "type": "string", "example": "09:00" },
+          "jam_selesai": { "type": "string", "example": "11:30" },
+          "waktu": { "type": "string", "example": "09:00 - 11:30 WIB" },
+          "status": {
+            "type": "string",
+            "enum": ["terjadwal", "berlangsung", "selesai", "batal"],
+            "example": "terjadwal"
+          },
+          "status_badge": { "type": "string", "example": "Terjadwal" },
+          "lokasi": { "type": "string", "example": "Ruang Rapat Utama Kantor Gubernur" },
+          "pejabat": { "type": "string", "example": "Gubernur Lampung" },
+          "link_dokumentasi": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "example": "https://drive.google.com/drive/folders/1ABCxyz"
+          },
+          "file_sambutan": { "type": "string", "nullable": true, "example": "sambutan_inflasi.pdf" },
+          "file_sambutan_url": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true,
+            "example": "http://127.0.0.1:8000/storage/sambutan/sambutan_inflasi.pdf"
+          },
+          "petugas": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/User" }
+          },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "admin@gmail.com"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "password"
+          },
+          "device_name": {
+            "type": "string",
+            "example": "Mobile Android App",
+            "description": "Nama pengenal perangkat token"
+          }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Login berhasil." },
+          "data": {
+            "type": "object",
+            "properties": {
+              "user": { "$ref": "#/components/schemas/User" },
+              "token": {
+                "type": "string",
+                "example": "1|E7mZq49dKj4B6F2N0o32Y8v1L..."
+              },
+              "token_type": { "type": "string", "example": "Bearer" }
+            }
+          }
+        }
+      },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": { "type": "string", "example": "Ahmad Fauzi, S.STP" },
+          "telp": { "type": "string", "example": "081298765432" },
+          "current_password": {
+            "type": "string",
+            "format": "password",
+            "description": "Diisi jika ingin mengganti password baru"
+          },
+          "new_password": {
+            "type": "string",
+            "format": "password",
+            "minLength": 8,
+            "description": "Password baru minimal 8 karakter"
+          },
+          "new_password_confirmation": {
+            "type": "string",
+            "format": "password",
+            "description": "Konfirmasi password baru (harus sama)"
+          }
+        }
+      },
+      "StoreAgendaForm": {
+        "type": "object",
+        "required": ["judul_acara", "tanggal", "user_ids"],
+        "properties": {
+          "judul_acara": { "type": "string", "example": "Pelantikan Pejabat Pimpinan Tinggi Pratama" },
+          "tanggal": { "type": "string", "format": "date", "example": "2026-10-05" },
+          "hari": { "type": "string", "example": "Senin" },
+          "jam_mulai": { "type": "string", "example": "08:30" },
+          "jam_selesai": { "type": "string", "example": "11:00" },
+          "status": {
+            "type": "string",
+            "enum": ["terjadwal", "berlangsung", "selesai", "batal"],
+            "default": "terjadwal"
+          },
+          "lokasi": { "type": "string", "example": "Balai Keratun Lantai 3" },
+          "pejabat": { "type": "string", "example": "Gubernur Lampung" },
+          "link": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://drive.google.com/drive/folders/sample"
+          },
+          "file_sambutan": {
+            "type": "string",
+            "format": "binary",
+            "description": "Dokumen teks sambutan berformat PDF (Maksimal 2 MB)"
+          },
+          "user_ids": {
+            "type": "array",
+            "items": { "type": "integer" },
+            "description": "Array ID Petugas pendamping (contoh: [2, 3])"
+          }
+        }
+      },
+      "UpdateAgendaJson": {
+        "type": "object",
+        "required": ["judul_acara", "tanggal", "user_ids"],
+        "properties": {
+          "judul_acara": { "type": "string", "example": "Pelantikan Pejabat Pimpinan Tinggi Pratama" },
+          "tanggal": { "type": "string", "format": "date", "example": "2026-10-05" },
+          "hari": { "type": "string", "example": "Senin" },
+          "jam_mulai": { "type": "string", "example": "08:30" },
+          "jam_selesai": { "type": "string", "example": "11:00" },
+          "status": {
+            "type": "string",
+            "enum": ["terjadwal", "berlangsung", "selesai", "batal"]
+          },
+          "lokasi": { "type": "string", "example": "Balai Keratun Lantai 3" },
+          "pejabat": { "type": "string", "example": "Gubernur Lampung" },
+          "link": { "type": "string", "format": "uri" },
+          "user_ids": {
+            "type": "array",
+            "items": { "type": "integer" }
+          }
+        }
+      },
+      "DashboardResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": true },
+          "message": { "type": "string", "example": "Data dashboard berhasil diambil." },
+          "data": {
+            "type": "object",
+            "properties": {
+              "counts": {
+                "type": "object",
+                "properties": {
+                  "total_agenda": { "type": "integer", "example": 45 },
+                  "agenda_hari_ini": { "type": "integer", "example": 2 },
+                  "agenda_berlangsung": { "type": "integer", "example": 1 },
+                  "agenda_terjadwal": { "type": "integer", "example": 12 },
+                  "agenda_selesai": { "type": "integer", "example": 30 },
+                  "agenda_batal": { "type": "integer", "example": 2 },
+                  "total_petugas": { "type": "integer", "example": 8 }
+                }
+              },
+              "agenda_mendatang": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Agenda" }
+              }
+            }
+          }
+        }
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "properties": {
+          "current_page": { "type": "integer", "example": 1 },
+          "per_page": { "type": "integer", "example": 10 },
+          "total": { "type": "integer", "example": 45 },
+          "last_page": { "type": "integer", "example": 5 }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "message": { "type": "string", "example": "Data yang dikirimkan tidak valid." },
+          "errors": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        }
+      },
+      "UnauthenticatedResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "example": "Unauthenticated." }
+        }
+      }
+    }
+  }
+}

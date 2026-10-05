@@ -1,102 +1,116 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  @include('layouts.partial.link')
-</head>
+@extends('layouts.app')
 
-<body class="bg-gray-50 dark:bg-neutral-900">
-  @include('layouts.partial.header')
-  @include('layouts.partial.sidebar')
+@section('title', 'Pengaturan Profil Akun - SIMAPIM')
+@section('page-title', 'Pengaturan Profil')
 
-  <!-- ========== MAIN CONTENT ========== -->
-  <!-- Breadcrumb -->
-  <div class="sticky top-0 inset-x-0 z-20 bg-white border-y border-gray-200 px-4 sm:px-6 lg:px-8 lg:hidden dark:bg-neutral-800 dark:border-neutral-700">
-    <div class="flex items-center py-2">
-      <button type="button" class="size-8 flex justify-center items-center gap-x-2 border border-gray-200 text-gray-800 hover:text-gray-500 rounded-lg focus:outline-hidden focus:text-gray-500 disabled:opacity-50 disabled:pointer-events-none dark:border-neutral-700 dark:text-neutral-200 dark:hover:text-neutral-500 dark:focus:text-neutral-500" aria-haspopup="dialog" aria-expanded="false" aria-controls="hs-application-sidebar" aria-label="Toggle navigation" data-hs-overlay="#hs-application-sidebar">
-        <span class="sr-only">Toggle Navigation</span>
-        <svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect width="18" height="18" x="3" y="3" rx="2" />
-          <path d="M15 3v18" />
-          <path d="m8 9 3 3-3 3" />
-        </svg>
-      </button>
-
-      <ol class="ms-3 flex items-center whitespace-nowrap">
-        <li class="flex items-center text-sm text-gray-800 dark:text-neutral-400">
-          Manage Account
-          <svg class="shrink-0 mx-3 overflow-visible size-2.5 text-gray-400 dark:text-neutral-500" width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <path d="M5 1L10.6869 7.16086C10.8637 7.35239 10.8637 7.64761 10.6869 7.83914L5 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-          </svg>
-        </li>
-        <li class="text-sm font-semibold text-gray-800 truncate dark:text-neutral-400" aria-current="page">
-          Edit Profile
-        </li>
-      </ol>
+@section('content')
+  <!-- Page Header -->
+  <div class="flex items-center justify-between mb-2">
+    <div>
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Pengaturan Profil Akun</h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Kelola data diri, alamat email kedinasan, dan kata sandi akun Anda.</p>
     </div>
+    <a href="{{ Auth::user()->type == 1 ? route('DashboardAdmin') : route('DashboardStaff') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      <span>Kembali ke Dashboard</span>
+    </a>
   </div>
-  <!-- End Breadcrumb -->
 
-  <!-- Content -->
-  <div class="w-full lg:ps-64">
-    <div class="mt-6 bg-white dark:bg-neutral-800 rounded-lg shadow p-6 max-w-2xl mx-auto">
-      <h2 class="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Manage Account</h2>
+  <!-- Form Card -->
+  <div class="max-w-3xl mx-auto bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8">
+    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+      @csrf
+      @method('PUT')
 
-      <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
-        @csrf
-        @method('PUT')
+      <!-- Avatar Upload Section -->
+      <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-100">
+        <div class="relative group">
+          <img id="avatar_preview" 
+               src="{{ asset('storage/avatars/' . (Auth::user()->avatar ?? 'no-image-available.png')) }}" 
+               alt="{{ Auth::user()->firstname }}" 
+               class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-md"
+               onerror="this.onerror=null;this.src='{{ asset('storage/avatars/no-image-available.png') }}';">
+          <label for="avatar_input" class="absolute bottom-0 right-0 p-2 rounded-full bg-brand-600 hover:bg-brand-500 text-white cursor-pointer shadow-lg transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <input id="avatar_input" type="file" name="avatar" accept="image/*" class="sr-only" onchange="previewAvatar(this)">
+          </label>
+        </div>
+        <div class="text-center sm:text-left">
+          <h3 class="text-sm font-bold text-slate-800">Foto Profil Anda</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Klik ikon kamera untuk memilih foto profil baru. Format JPG/PNG (Maks 2 MB).</p>
+          <div class="mt-2">
+            <span class="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-[10px] font-bold {{ Auth::user()->type == 1 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-brand-50 text-brand-700 border border-brand-200' }}">
+              <span class="w-1.5 h-1.5 rounded-full {{ Auth::user()->type == 1 ? 'bg-amber-500' : 'bg-brand-500' }}"></span>
+              Hak Akses: {{ Auth::user()->type == 1 ? 'Administrator' : 'Petugas' }}
+            </span>
+          </div>
+          @error('avatar')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
+        </div>
+      </div>
 
-        <!-- First Name -->
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-neutral-200">First Name</label>
-          <input type="text" name="firstname" value="{{ old('firstname', auth()->user()->firstname) }}" required
-            class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300">
+      <!-- Fields -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+        
+        <!-- Nama Depan -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nama Depan</label>
+          <input type="text" name="firstname" value="{{ old('firstname', Auth::user()->firstname) }}" required
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+          @error('firstname')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
         </div>
 
-        <!-- Last Name -->
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-neutral-200">Last Name</label>
-          <input type="text" name="lastname" value="{{ old('lastname', auth()->user()->lastname) }}"
-            class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300">
+        <!-- Nama Belakang -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nama Belakang</label>
+          <input type="text" name="lastname" value="{{ old('lastname', Auth::user()->lastname) }}"
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+          @error('lastname')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
         </div>
 
         <!-- Email -->
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-neutral-200">Email</label>
-          <input type="email" name="email" value="{{ old('email', auth()->user()->email) }}" required
-            class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Alamat Email Kedinasan</label>
+          <input type="email" name="email" value="{{ old('email', Auth::user()->email) }}" required
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+          @error('email')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
         </div>
 
-        <!-- Password -->
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-neutral-200">Password</label>
+        <!-- Password Baru -->
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kata Sandi Baru (Opsional)</label>
           <input type="password" name="password"
-            class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300">
-          <p class="text-sm text-gray-500 mt-1">Leave this blank if you don't want to change the password.</p>
+            placeholder="Kosongkan jika tidak ingin mengubah kata sandi"
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+          <p class="text-[10px] text-slate-400 mt-1">Gunakan minimal 6 karakter kombinasi huruf dan angka.</p>
+          @error('password')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
         </div>
 
-        <!-- Avatar -->
-        <div class="mb-4">
-          <label class="block text-gray-700 dark:text-neutral-200">Avatar</label>
-          <input type="file" name="avatar"
-            class="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring focus:border-blue-300">
+      </div>
 
-          @if(auth()->user()->avatar)
-            <div class="flex justify-center mt-3">
-              <img src="{{ asset('storage/avatars/' . auth()->user()->avatar) }}" class="w-20 h-20 rounded-full border object-cover" alt="Avatar">
-            </div>
-          @endif
-        </div>
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+        <a href="{{ Auth::user()->type == 1 ? route('DashboardAdmin') : route('DashboardStaff') }}" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition">
+          Batal
+        </a>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg shadow-brand-600/25 transition transform active:scale-95">
+          Simpan Pembaruan
+        </button>
+      </div>
 
-        <!-- Action Buttons -->
-        <div class="flex justify-end space-x-2 mt-6">
-          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">Save</button>
-          <a href="{{ url()->previous() }}" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</a>
-        </div>
-      </form>
-    </div>
+    </form>
   </div>
-  <!-- End Content -->
+@endsection
 
-  @include('layouts.partial.script')
-</body>
-</html>
+@section('scripts')
+<script>
+  function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('avatar_preview').src = e.target.result;
+      }
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+@endsection

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Http\Requests\StorePetugasRequest;
+use App\Http\Requests\UpdatePetugasRequest;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -14,36 +16,28 @@ class PetugasController extends Controller
         return view('petugas.create');
     }
 
-    public function store(Request $request)
+    public function store(StorePetugasRequest $request)
     {
-        $validated = $request->validate([
-            'firstname' => 'required|string|max:200',
-            'lastname' => 'nullable|string|max:200',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'type' => 'required|in:1,2', // 1=Admin, 2=Petugas
-            'avatar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
+        $validated = $request->validated();
 
         $user = new User();
         $user->firstname = $validated['firstname'];
-        $user->lastname = $validated['lastname'];
+        $user->lastname = $validated['lastname'] ?? null;
         $user->email = $validated['email'];
         $user->password = Hash::make($validated['password']);
         $user->type = $validated['type'];
 
-        // Handle avatar upload
+        // Handle avatar upload via Laravel Storage API
         if ($request->hasFile('avatar')) {
-            $filename = time() . '_' . $request->file('avatar')->getClientOriginalName();
-            $request->file('avatar')->move(public_path('storage/avatars'), $filename);
-            $user->avatar = $filename;
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = basename($path);
         } else {
             $user->avatar = 'no-image-available.png';
         }
 
         $user->save();
 
-        return redirect()->route('petugas.create')->with('success', 'Petugas berhasil ditambahkan.');
+        return redirect()->route('petugas.index')->with('success', 'Petugas berhasil ditambahkan.');
     }
 
     public function index()
@@ -64,18 +58,48 @@ class PetugasController extends Controller
         return view('petugas.edit', compact('user'));
     }
 
+    public function update(UpdatePetugasRequest $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $validated = $request->validated();
+
+        // Update data umum
+        $user->firstname = $validated['firstname'];
+        $user->lastname = $validated['lastname'] ?? null;
+        $user->email = $validated['email'];
+        $user->type = $validated['type'];
+
+        // Update password jika diisi
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
+        // Update avatar jika ada file baru via Laravel Storage API
+        if ($request->hasFile('avatar')) {
+            if ($user->avatar && $user->avatar !== 'no-image-available.png' && Storage::disk('public')->exists('avatars/' . $user->avatar)) {
+                Storage::disk('public')->delete('avatars/' . $user->avatar);
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = basename($path);
+        }
+
+        $user->save();
+
+        return redirect()->route('petugas.index')->with('success', 'Petugas berhasil diperbarui.');
+    }
+
     public function destroy($id)
     {
         $user = User::findOrFail($id);
         
-        // Hapus file avatar jika ada
-        if ($user->avatar && file_exists(public_path('storage/avatars/' . $user->avatar))) {
-            unlink(public_path('storage/avatars/' . $user->avatar));
+        // Hapus file avatar via Laravel Storage API jika bukan default
+        if ($user->avatar && $user->avatar !== 'no-image-available.png' && Storage::disk('public')->exists('avatars/' . $user->avatar)) {
+            Storage::disk('public')->delete('avatars/' . $user->avatar);
         }
 
         $user->delete();
 
         return redirect()->route('petugas.index')->with('success', 'User berhasil dihapus.');
     }
-
 }

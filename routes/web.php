@@ -40,6 +40,7 @@ Route::get('/dashboard-staff', [DashboardController::class, 'index'])
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [UserController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [UserController::class, 'update'])->name('profile.update');
+    Route::put('/agenda/{id}/link-dokumentasi', [AgendaController::class, 'updateLinkDokumentasi'])->name('agenda.updateLinkDokumentasi');
 });
 
 Route::prefix('agenda')->name('agenda.')->middleware(['auth', 'role:staff'])->group(function () {
@@ -64,5 +65,24 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         Route::put('/{id}', [AgendaController::class, 'update'])->name('update');
         Route::delete('/{id}', [AgendaController::class, 'destroy'])->name('destroy');
     });
+
+    // Audit Trail / Activity Log
+    Route::get('/activity-log', [\App\Http\Controllers\ActivityLogController::class, 'index'])->name('activity-log.index');
 });
 
+// Dokumentasi Interaktif OpenAPI / Swagger UI
+Route::get('/docs', function () {
+    return file_get_contents(base_path('docs/index.html'));
+})->name('api.docs');
+
+Route::get('/docs/api.json', function () {
+    return response()->file(base_path('docs/api.json'), [
+        'Content-Type' => 'application/json'
+    ]);
+});
+
+Route::get('/api.json', function () {
+    return response()->file(base_path('docs/api.json'), [
+        'Content-Type' => 'application/json'
+    ]);
+});
