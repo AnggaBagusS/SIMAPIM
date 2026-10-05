@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\UpdateProfileRequest;
 
 class UserController extends Controller
 {
@@ -14,24 +17,17 @@ class UserController extends Controller
         return view('profile.edit', compact('user'));
     }
 
-    // Update profil
-    public function update(Request $request)
+    // Update profil mandiri
+    public function update(UpdateProfileRequest $request)
     {
         $user = Auth::user();
-
-        $validated = $request->validate([
-            'firstname' => 'nullable|string|max:200',
-            'lastname' => 'nullable|string|max:200',
-            'email' => 'nullable|email|max:200|unique:users,email,' . $user->id,
-            'password' => 'nullable|string|min:6',
-            'avatar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        ]);
+        $validated = $request->validated();
 
         if (!empty($validated['firstname'])) {
             $user->firstname = $validated['firstname'];
         }
 
-        if (!empty($validated['lastname'])) {
+        if (array_key_exists('lastname', $validated)) {
             $user->lastname = $validated['lastname'];
         }
 
@@ -40,20 +36,18 @@ class UserController extends Controller
         }
 
         if (!empty($validated['password'])) {
-            $user->password = bcrypt($validated['password']);
+            $user->password = Hash::make($validated['password']);
         }
 
         if ($request->hasFile('avatar')) {
-            $file = $request->file('avatar');
-            $filename = time() . '_' . $file->getClientOriginalName();
-
-            $oldAvatarPath = public_path('storage/avatars/' . $user->avatar);
-            if (file_exists($oldAvatarPath)) {
-                @unlink($oldAvatarPath);
+            // Hapus avatar lama via Laravel Storage API jika bukan default
+            if ($user->avatar && $user->avatar !== 'no-image-available.png' && Storage::disk('public')->exists('avatars/' . $user->avatar)) {
+                Storage::disk('public')->delete('avatars/' . $user->avatar);
             }
 
-            $file->move(public_path('storage/avatars'), $filename);
-            $user->avatar = $filename;
+            // Simpan avatar baru via Laravel Storage API
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = basename($path);
         }
 
         $user->save();
@@ -63,8 +57,5 @@ class UserController extends Controller
         } else {
             return redirect('/dashboard-staff')->with('success', 'Profil berhasil diperbarui.');
         }
-
-
     }
-
 }
