@@ -1,103 +1,128 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  @include('layouts.partial.link')
-</head>
+@extends('layouts.app')
 
-<body class="bg-gray-50 dark:bg-neutral-900">
-  @include('layouts.partial.header')
-  @include('layouts.partial.sidebar')
+@section('title', 'Tambah Petugas Baru - SIMAPIM')
+@section('page-title', 'Tambah Petugas')
 
-  @section('breadcrumb')
-    <li class="flex items-center text-sm text-gray-800 dark:text-neutral-400">
-      <a href="{{ route('petugas.index') }}" class="hover:underline">Petugas</a>
-      <svg class="shrink-0 mx-3 overflow-visible size-2.5 text-gray-400 dark:text-neutral-500" viewBox="0 0 16 16"><path d="M5 1L10.69 7.16c.18.19.18.49 0 .68L5 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-    </li>
-    <li class="text-sm font-semibold text-gray-800 truncate dark:text-neutral-400" aria-current="page">
-      Tambah Petugas
-    </li>
-  @endsection
-  @include('layouts.partial.breadcrumb')
+@section('content')
+  <!-- Page Header -->
+  <div class="flex items-center justify-between mb-2">
+    <div>
+      <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">Tambah Petugas Baru</h1>
+      <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Daftarkan akun administrator atau staf petugas pendamping baru.</p>
+    </div>
+    <a href="{{ route('petugas.index') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+      <span>Kembali</span>
+    </a>
+  </div>
 
-  <!-- Content -->
-  <main class="w-full lg:ps-64">
-    <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <div  class="w-full max-w-5xl bg-white dark:bg-neutral-800 rounded-lg shadow p-6">
-        <h1 class="text-2xl font-semibold text-gray-800 dark:text-white mb-6">Tambah Petugas</h1>
+  <!-- Form Card -->
+  <div class="max-w-4xl mx-auto bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 sm:p-8">
+    <form action="{{ route('petugas.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+      @csrf
 
-        <form action="{{ route('petugas.store') }}" method="POST" enctype="multipart/form-data">
-          @csrf
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- First Name -->
-            <div>
-              <label for="firstname" class="block text-gray-700 dark:text-neutral-200 mb-1">First Name</label>
-              <input type="text" name="firstname" id="firstname" required
-                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500">
-            </div>
-
-            <!-- Email -->
-            <div>
-              <label for="email" class="block text-gray-700 dark:text-neutral-200 mb-1">Email</label>
-              <input type="email" name="email" id="email" required
-                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500">
-            </div>
-
-            <!-- Last Name -->
-            <div>
-              <label for="lastname" class="block text-gray-700 dark:text-neutral-200 mb-1">Last Name</label>
-              <input type="text" name="lastname" id="lastname"
-                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500">
-            </div>
-
-            <!-- Password -->
-            <div>
-              <label for="password" class="block text-gray-700 dark:text-neutral-200 mb-1">Password</label>
-              <input type="password" name="password" id="password" required
-                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500">
-            </div>
-
-            <!-- User Role -->
-            <div>
-              <label for="type" class="block text-gray-700 dark:text-neutral-200 mb-1">User Role</label>
-              <select name="type" id="type"
-                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500">
-                <option value="2" selected>Petugas</option>
-                <option value="1">Admin</option>
-              </select>
-            </div>
-
-            <!-- Confirm Password -->
-            <div>
-              <label for="password_confirmation" class="block text-gray-700 dark:text-neutral-200 mb-1">Confirm Password</label>
-              <input type="password" name="password_confirmation" id="password_confirmation" required
-                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500">
-            </div>
-
-            <!-- Avatar -->
-            <div class="col-span-1 md:col-span-2">
-              <label for="avatar" class="block text-gray-700 dark:text-neutral-200 mb-1">Avatar</label>
-              <input type="file" name="avatar" id="avatar"
-                class="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring focus:border-blue-500">
-
-              <div class="mt-4 flex justify-center">
-                <div class="w-24 h-24 rounded-full border border-gray-300 flex items-center justify-center text-sm text-gray-400">
-                  Avatar
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Buttons -->
-          <div class="flex justify-end mt-6 space-x-2">
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">Save</button>
-            <a href="/" class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-md">Cancel</a>
-          </div>
-        </form>
+      <!-- Avatar Upload Section -->
+      <div class="flex flex-col sm:flex-row items-center gap-6 pb-6 border-b border-slate-100">
+        <div class="relative group">
+          <img id="avatar_preview" 
+               src="{{ asset('storage/avatars/no-image-available.png') }}" 
+               alt="Preview Avatar" 
+               class="w-24 h-24 rounded-full object-cover border-4 border-slate-100 shadow-md">
+          <label for="avatar_input" class="absolute bottom-0 right-0 p-2 rounded-full bg-brand-600 hover:bg-brand-500 text-white cursor-pointer shadow-lg transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <input id="avatar_input" type="file" name="avatar" accept="image/*" class="sr-only" onchange="previewAvatar(this)">
+          </label>
+        </div>
+        <div class="text-center sm:text-left">
+          <h3 class="text-sm font-bold text-slate-800">Foto Profil Pengguna</h3>
+          <p class="text-xs text-slate-500 mt-0.5">Unggah foto format JPG, JPEG, atau PNG (Maksimal 2 MB). Opsional.</p>
+          @error('avatar')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
+        </div>
       </div>
-    <div class="p-4 sm:p-6 space-y-4 sm:space-y-6">
-  </main>
-  <!-- End Content -->
 
-  @include('layouts.partial.script')
-</body>
-</html>
+      <!-- Input Fields -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        
+        <!-- Nama Depan -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nama Depan <span class="text-rose-500">*</span></label>
+          <input type="text" name="firstname" value="{{ old('firstname') }}" required
+            placeholder="Contoh: Ahmad"
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+          @error('firstname')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <!-- Nama Belakang -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Nama Belakang</label>
+          <input type="text" name="lastname" value="{{ old('lastname') }}"
+            placeholder="Contoh: Pratama"
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+          @error('lastname')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <!-- Email -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Alamat Email <span class="text-rose-500">*</span></label>
+          <input type="email" name="email" value="{{ old('email') }}" required
+            placeholder="petugas@instansi.go.id"
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+          @error('email')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <!-- Role User -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Peran / Hak Akses <span class="text-rose-500">*</span></label>
+          <select name="type" required class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+            <option value="2" {{ old('type') == '2' ? 'selected' : '' }}>Petugas / Staf (Akses Portal Petugas)</option>
+            <option value="1" {{ old('type') == '1' ? 'selected' : '' }}>Administrator (Akses Penuh Kelola Sistem)</option>
+          </select>
+          @error('type')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Kata Sandi <span class="text-rose-500">*</span></label>
+          <input type="password" name="password" required
+            placeholder="Minimal 6 karakter"
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+          @error('password')<p class="text-rose-500 text-[11px] mt-1">{{ $message }}</p>@enderror
+        </div>
+
+        <!-- Confirm Password -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Konfirmasi Kata Sandi <span class="text-rose-500">*</span></label>
+          <input type="password" name="password_confirmation" required
+            placeholder="Ulangi kata sandi"
+            class="block w-full py-2.5 px-3.5 text-xs text-slate-900 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 transition shadow-xs">
+        </div>
+
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
+        <a href="{{ route('petugas.index') }}" class="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 text-xs font-semibold transition">
+          Batal
+        </a>
+        <button type="submit" class="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg shadow-brand-600/25 transition transform active:scale-95">
+          Daftarkan Petugas
+        </button>
+      </div>
+
+    </form>
+  </div>
+@endsection
+
+@section('scripts')
+<script>
+  function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('avatar_preview').src = e.target.result;
+      }
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+@endsection
