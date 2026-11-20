@@ -48,7 +48,7 @@ Aplikasi ini dibangun menggunakan **Laravel 10**, antarmuka modern **Tailwind CS
 
 | Dashboard Admin | Halaman Petugas |
 | :---: | :---: |
-| <img width="923" height="503" alt="Screenshot 2026-10-05 094313" src="https://github.com/user-attachments/assets/928e4c37-27db-426b-b96d-bb5a3129fb6f" /> | <img width="926" height="506" alt="Screenshot 2026-10-05 094435" src="https://github.com/user-attachments/assets/3010775d-f84a-4c78-968d-aeb0a73970d0" /> |
+| <img width="928" height="511" alt="Screenshot 2026-11-20 185437" src="https://github.com/user-attachments/assets/cf98e058-eed4-4ae9-9b78-36ff5ed182b7" /> | <img width="926" height="506" alt="Screenshot 2026-11-20 185550" src="https://github.com/user-attachments/assets/0fd78dfb-2ebc-472a-96bd-3828fe4975f8" /> |
 
 ---
 
